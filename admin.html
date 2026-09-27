@@ -145,6 +145,12 @@
     max-width: 800px;
   }
 
+  #adminCourseList {
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+    padding-right: 6px;
+  }
+
   .viewTitle { color: #12233d; margin-top: 0; }
 
   .sectionHeaderRow {
@@ -227,6 +233,17 @@
 
 .deptLevelRow:last-child { border-bottom: none; }
 .deptLevelRow .levelName { color: var(--text-muted); }
+
+.studentChartCard {
+  flex: 1;
+  min-width: 220px;
+}
+
+.studentChartTitle {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
 
 .deptLevelRow .levelCount {
   font-weight: 700;
@@ -404,6 +421,7 @@
       flex-shrink: 0;
     }
     .mainArea { height: auto; overflow-y: visible; padding: 22px 18px 50px; }
+    #adminCourseList { max-height: none; overflow-y: visible; }
 
     #loginBox { margin: 40px 16px; padding: 26px 22px; }
 
@@ -1208,14 +1226,12 @@ function renderStudentStats(querySnapshot) {
     const deptTotal = levelData.reduce((sum, d) => sum + d.total, 0);
 
     return `
-      <div class="deptBox">
-        <div class="deptBoxHeader" style="background:${DEPT_COLORS[dept]};">
-          ${dept} <span style="opacity:0.85; font-weight:400;">(${deptTotal})</span>
+      <div class="studentChartCard">
+        <div class="studentChartTitle" style="color:${DEPT_COLORS[dept]};">
+          ${dept} <span style="color:var(--text-muted); font-weight:400;">(${deptTotal})</span>
         </div>
-        <div class="deptBoxBody" style="padding:10px 10px 4px;">
-          ${buildDeptLevelChartSvg(dept, levelData)}
-          <p style="font-size:10.5px; color:var(--text-muted); text-align:center; margin:2px 0 6px;">Red line = % of that level who joined in the last 24 hours</p>
-        </div>
+        ${buildDeptLevelChartSvg(dept, levelData)}
+        <p style="font-size:10.5px; color:var(--text-muted); text-align:center; margin:2px 0 6px;">Red line = % of that level who joined in the last 24 hours</p>
       </div>
     `;
   }).join("");
