@@ -643,9 +643,6 @@
       <option value="300L">300L</option>
       <option value="400L">400L</option>
     </select>
-    <select id="courseSession" required>
-      <option value="">Select academic session</option>
-    </select>
             <select id="courseCredit">
               <option value="">Select credit unit</option>
               <option value="0 Unit">0 Unit</option>
@@ -1607,7 +1604,6 @@ div.style.borderLeft = `4px solid ${levelColors[course.level] || "#0d9488"}`;
       document.getElementById("courseTitle").value = courseData.title || "";
       document.getElementById("courseDepartment").value = courseData.department || "Computer Engineering";
       document.getElementById("courseLevel").value = courseData.level || "";
-      document.getElementById("courseSession").value = courseData.academicSession || "";
       document.getElementById("courseCredit").value = courseData.credit || "";
       document.getElementById("courseDescription").value = courseData.description || "";
 
@@ -1662,24 +1658,6 @@ div.style.borderLeft = `4px solid ${levelColors[course.level] || "#0d9488"}`;
   });
 }
 
-function populateSessionOptions() {
-  const select = document.getElementById("courseSession");
-  const now = new Date();
-  // Academic sessions typically start around September — before that,
-  // we're still in the previous session.
-  const baseYear = now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1;
-
-  // One session ahead (for pre-loading next year's content) down to
-  // four sessions back (for older archived content).
-  for (let y = baseYear + 1; y >= baseYear - 4; y--) {
-    const option = document.createElement("option");
-    option.value = `${y}/${y + 1}`;
-    option.textContent = `${y}/${y + 1}`;
-    select.appendChild(option);
-  }
-}
-
-populateSessionOptions();
   async function updateDonationBadge() {
     const q = query(collection(db, "donations"), where("read", "==", false));
     const querySnapshot = await getDocs(q);
@@ -1933,7 +1911,6 @@ onAuthStateChanged(auth, async (user) => {
         title: document.getElementById("courseTitle").value,
         department: document.getElementById("courseDepartment").value,
         level: document.getElementById("courseLevel").value,
-        academicSession: document.getElementById("courseSession").value,
         credit: document.getElementById("courseCredit").value,
         description: document.getElementById("courseDescription").value,
         notes: notesArray,

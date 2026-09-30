@@ -325,6 +325,7 @@
     #courseList {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-auto-rows: max-content;
       align-content: start;
       gap: 16px;
       flex: 1;
@@ -1155,6 +1156,36 @@
       await setDoc(doc(db, "favorites", currentUserId), { courseIds: Array.from(favoriteIds) });
     }
 
+    // Formats the moment a course was posted, e.g. "30 Sep 2026".
+    function formatPostedDate(ts) {
+      if (typeof ts !== "number" || !Number.isFinite(ts)) return "";
+      return new Date(ts).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    }
+
+    // Course list shows a fixed number of rows before scrolling kicks in:
+    // 2 rows on wider screens (e.g. 3 across x 2 down = 6 cards) and
+    // 3 cards on phones (single column). Extra courses are reached by
+    // scrolling inside the list.
+    function applyCourseListLimit() {
+      const list = document.getElementById("courseList");
+      if (!list) return;
+      list.style.maxHeight = "";
+      list.style.overflowY = "";
+      list.style.flex = "";
+      if (list.offsetParent === null) return;
+      const cards = list.querySelectorAll(":scope > .courseCard");
+      const cols = Math.max(1, getComputedStyle(list).gridTemplateColumns.split(" ").length);
+      const rows = cols === 1 ? 3 : 2;
+      const limit = cols * rows;
+      if (cards.length <= limit) return;
+      const listTop = list.getBoundingClientRect().top;
+      const lastVisibleBottom = cards[limit - 1].getBoundingClientRect().bottom;
+      list.style.flex = "none";
+      list.style.overflowY = "auto";
+      list.style.maxHeight = Math.ceil(lastVisibleBottom - listTop + 4) + "px";
+    }
+    window.addEventListener("resize", applyCourseListLimit);
+
     function createCourseCard(courseId, course) {
       const isFav = favoriteIds.has(courseId);
 
@@ -1195,6 +1226,7 @@
         if (onFavoritesTab && !nowFav) {
           starBtn.closest(".courseCard").remove();
           updateStats(favoriteIds.size, "Your favorites");
+          applyCourseListLimit();
           if (document.getElementById("courseList").children.length === 0) {
             document.getElementById("courseList").innerHTML = "<p>You haven't bookmarked any courses yet. Click the ☆ on a course to save it here.</p>";
           }
@@ -1214,7 +1246,7 @@
 
       const meta = document.createElement("p");
       meta.className = "courseMeta";
-      meta.innerHTML = `${escapeHTML(course.level)} · ${escapeHTML(course.credit)}${course.academicSession ? ` <span class="sessionTag">${escapeHTML(course.academicSession)}</span>` : ""}`;
+      meta.innerHTML = `${escapeHTML(course.level)} · ${escapeHTML(course.credit)}${course.createdAt ? ` <span class="sessionTag">Posted ${escapeHTML(formatPostedDate(course.createdAt))}</span>` : ""}`;
 
       const hint = document.createElement("p");
       hint.className = "courseHint";
@@ -1781,6 +1813,11 @@
       matches.forEach(({ id, course }) => {
         courseList.appendChild(createCourseCard(id, course));
       });
+
+      applyCourseListLimit();
+      // Re-measure after the cards' entrance animation settles.
+      setTimeout(applyCourseListLimit, 400);
+
     }
 
     async function loadCourses(searchTerm = "") {
@@ -1858,7 +1895,7 @@
 
     function buildCourseDetailHTML(course) {
       let html = `<h2>${escapeHTML(course.code)} — ${escapeHTML(course.title)}</h2>`;
-      html += `<p style="color:var(--text-muted);">${escapeHTML(course.level)} · ${escapeHTML(course.credit)}${course.academicSession ? ` <span class="sessionTag">${escapeHTML(course.academicSession)}</span>` : ""}</p>`;
+      html += `<p style="color:var(--text-muted);">${escapeHTML(course.level)} · ${escapeHTML(course.credit)}${course.createdAt ? ` <span class="sessionTag">Posted ${escapeHTML(formatPostedDate(course.createdAt))}</span>` : ""}</p>`;
 
       if (course.description) html += `<p>${escapeHTML(course.description)}</p>`;
       if (course.prerequisites) {
@@ -1931,6 +1968,7 @@
       document.querySelector(".toolbar").style.display = "block";
       document.getElementById("statsRow").style.display = "flex";
       openCourseId = null;
+      applyCourseListLimit();
 
       if (window.location.hash.startsWith("#course/")) {
         history.replaceState(null, "", window.location.pathname + window.location.search);
