@@ -181,7 +181,7 @@
     }
 
     #logoutBtn {
-      margin: auto 22px 0;
+      margin: 16px 22px 0;
       background: rgba(255, 255, 255, 0.1);
       color: #f2efe6;
       border: 1px solid rgba(255, 255, 255, 0.25);
@@ -2078,7 +2078,7 @@
       appContent.style.display = "block";
 
       const namePart = auth.currentUser.email.split("@")[0];
-      document.getElementById("welcomeMsg").textContent = `Hello, ${namePart}`;
+      document.getElementById("welcomeMsg").textContent = `Welcome back, ${namePart}`;
 
       await loadUserFavorites(uid);
       startDashboard(selectedDepartment, selectedLevelOnboard);
@@ -2123,7 +2123,7 @@
 
         document.getElementById("onboardingScreen").style.display = "none";
         appContent.style.display = "block";
-        document.getElementById("welcomeMsg").textContent = `Hello, ${namePart}`;
+        document.getElementById("welcomeMsg").textContent = `Welcome back, ${namePart}`;
         await loadUserFavorites(user.uid);
         startDashboard(profile.department, profile.level);
       } else {
